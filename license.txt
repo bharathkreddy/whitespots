@@ -1,0 +1,40 @@
+INSIGHTAIQ PROPRIETARY LICENSE
+Version 1.0 – 11 May 2025
+
+Copyright © 2025 InsightAIQ. All rights reserved.
+
+Definitions
+"Software" means the source code, binary executables, documentation and any related materials delivered with this file.
+"You" means the individual or legal entity exercising rights under this License.
+
+Grant of Limited License
+Subject to the terms below, InsightAIQ grants You a personal, non‑exclusive, non‑transferable, non‑sublicensable license to install and use the Software solely for your internal evaluation and development purposes.
+
+Restrictions
+You shall NOT:
+a. copy, reproduce, republish, upload, post, or transmit the Software, except for a single archival copy;
+b. distribute, sublicense, sell, lease, loan, or otherwise make the Software available to any third party;
+c. modify, adapt, translate, create derivative works from, or reverse‑engineer the Software, except to the extent such prohibition is not permitted by applicable law;
+d. remove or alter any proprietary notices, trademarks, or disclaimers;
+e. claim ownership of, or misrepresent your authorship of, the Software or any portion of it.
+
+Permission Requests
+If You wish to copy, reuse, or distribute any portion of the Software beyond the scope above, please submit a written request via the contact form at https://insightaiq.com/contact.html. No such rights are granted unless and until InsightAIQ provides written authorization.
+
+Ownership
+The Software is licensed, not sold. InsightAIQ retains all title, copyright, and other intellectual‑property rights in the Software.
+
+Warranty Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON‑INFRINGEMENT.
+
+Limitation of Liability
+IN NO EVENT SHALL INSIGHTAIQ OR ITS LICENSORS BE LIABLE FOR ANY INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Termination
+This License terminates automatically if You breach any of its terms. Upon termination You must immediately cease all use of the Software and destroy all copies in your possession or control.
+
+Governing Law
+This License shall be governed by and construed in accordance with the laws of England and Wales, without regard to its conflict‑of‑law principles.
+
+END OF TERMS
+

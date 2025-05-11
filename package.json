@@ -1,0 +1,22 @@
+{
+  "name": "whitespots",
+  "version": "1.0.0",
+  "description": "backend for whitespots",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bharathkreddy/whitespots.git"
+  },
+  "keywords": [
+    "whitespots"
+  ],
+  "author": "Bharath k. Reddy",
+  "license": "SEE LICENSE IN license.txt",
+  "bugs": {
+    "url": "https://github.com/bharathkreddy/whitespots/issues"
+  },
+  "homepage": "https://github.com/bharathkreddy/whitespots#readme"
+}
