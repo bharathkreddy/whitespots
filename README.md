@@ -123,5 +123,44 @@ In general we are going to see where nginx serves the files from and how. We ins
     - test and reload the configuration.
     - Before this bharathreddy.net/.git would have given 404 now it gives 403 (website server would expose these files if present otherwise.)
 25. Server responce gives way nginx signature and even server OS. Hide these.
+
     ![nginxSignature](img/nginxServerSignature.png)
-    -
+
+    - on `/etc/nginx/nginx.conf` uncomment `server_tokens off;`
+
+26. Create a Common config file and include this config to every sites and subsites config
+    - create a file `/etc/nginx/snippets/security-headers.conf` and add header contents.
+    - add `include snippets/security-headers.conf;` in server block in each conf.\
+    - test and reload nginx config.
+    - check the website at `securityheaders.com` to see if these headers are in effect. Or check on google dev tools.
+
+### Emabling compression on nginx
+
+- uncomment the gzip block in `nginx.conf`
+- test and reload the config.
+
+### DOS and DDOS protection
+
+- create `/etc/nginx/snippets/dos-protection.conf`
+- add it to nginx.conf
+- test and reload the settings.
+
+### Hijacking of website
+
+- As of now nothing prevents any one from adding an A record to their domain pointing to ip address of our server. This means our webserver is going to display contents of our server on that registered domain.
+- To prevent this add another server block with default on website profile in `/etc/nginx/sites-available/`
+- add a permanent redirection `301` to point to our website.
+- now any hit to server which is not our website will get redirected to our website. Try it on browser with direct ip address - this now will get redirected to our website.
+
+# HTTPS
+
+### installing _[Certbot](https://certbot.eff.org/instructions?ws=nginx&os=snap&tab=standard)_
+
+- `sudo snap install --classic certbot` : install
+- `sudo ln -s /snap/bin/certbot /usr/bin/certbot` : to ensure certbot command runs
+- `sudo certbot --nginx --hsts -d bharathreddy.net -d www.bharathreddy.net` : generate a cert with 2 SANs (use just one -d for just 1 domain like : -d test.bharathreddy.net)
+- `sudo certbot certificates`: to check the certs
+
+### Understanding changes made by certbot on our server
+
+- sudo systemctl list-timers
