@@ -1,20 +1,67 @@
+**Whitespots+ is a propreitary product of InsightAIQ. Please read the [terms of license](license.txt).**
+
+# Application
+
+<details>
+  <summary>High Level Architecture</summary>
+<div style="background-color: black; padding: 10px; border-radius: 5px;">
+
+![Architecture](img/Architecture.png)
+
+</div>
+
+- Product Marketing site (www.insightaiq.com) stays on a managed domain hosting provider.f
+- Login & App live under a new sub-domain (e.g. login.insightaiq.com) that points to a self managed VPS.
+- Nginx terminates TLS and reverse-proxies to Node/Express.
+- Authentication is fully self-managed: passwords & refresh tokens in MongoDB Atlas; access tokens are JWTs minted by the Node app.
+
+</details>
+
+<details>
+  <summary>DNS setup</summary>
+
+</details>
+
+<details>
+  <summary>Nginx vhost setup</summary>
+
+</details>
+
+<details>
+  <summary>TLS</summary>
+
+</details>
+
+<details>
+  <summary>Node runtime</summary>
+
+</details>
+
+<details>
+  <summary>Security Hygiene</summary>
+
+</details>
+
 # Setting up & Securing VPS
+
+<details>
+  <summary>Setting up & Securing VPS</summary>
 
 ### 🔌 Connect to VPS
 
 1. Create a keypair & copy the public key to VPS during VPS creation on VPS vendor website.
 2. `ssh root@147.93.84.39 -i ~/.ssh/<privateKey>`
 3. Alternate -
-   1. Create a file `config` on `.ssh` folder below are contents of file
-      > Host my_vps_host
-      > HostName  
-      > user root
-      > IdentifyFile ~/.ssh/<privateKey>
-   2. `ssh my_vps_host`
-4. ssh connections usually time out after 5 minutes so to fix that add a global configuration on config file.
-   1. Right at top of config file add this
-      > ServerAliveIngterval 120 : sends an empty SSH signal to remote machine to keep it alive
-      > ServerAliveCountMax 3 : retries if above signal fails. these signals are sent over SSH.
+4. Create a file `config` on `.ssh` folder below are contents of file
+   > Host my_vps_host
+   > HostName
+   > user root
+   > IdentifyFile ~/.ssh/<privateKey>
+5. `ssh my_vps_host`
+6. ssh connections usually time out after 5 minutes so to fix that add a global configuration on config file.
+7. Right at top of config file add this
+   > ServerAliveIngterval 120 : sends an empty SSH signal to remote machine to keep it alive
+   > ServerAliveCountMax 3 : retries if above signal fails. these signals are sent over SSH.
 
 ### 🔑 Generate Keys on VPS
 
@@ -50,19 +97,24 @@
 3. `jail.conf` defines config about , attempts after which what action to take. Open the file and see, file clearly states that it should not be modified as this file gets overwritten with each update of package.
 4. Create a file `/etc/fail2ban/jail.local` with below config
 
-   > [DEFAULT]
-   > bantime = 3h
-   > maxretry = 5
+> [DEFAULT]
+> bantime = 3h
+> maxretry = 5
 
-   > [sshd]
-   > enabled = true
+> [sshd]
+> enabled = true
 
 5. Restart fail2ban service `sudo systemctl restart fail2ban.service`
 6. We can check all jails `sudo fail2ban-client status`
 7. check the jail `sudo fail2ban-client status sshd`
 8. To unban an ip `sudo fail2ban-client set sshd unbanip <ipaddrr>`
 
-# 🎬 NGINX
+</details>
+
+<!-- ## 🎬 NGINX -->
+
+<details>
+  <summary>Setting up Nginx</summary>
 
 ### Install Nginx
 
@@ -78,7 +130,7 @@
 
 In general we are going to see where nginx serves the files from and how. We inspect nginx.conf file, break the systemlink in sites-enabled folder, create a new system link in sites-enabled to point to sites-available and instead of default profile we are going to create our own profile.
 
-#### Finding HOW nginx serves files.
+### Finding HOW nginx serves files.
 
 5. In `/etc/nginx/nginx.conf` we see in the http block - sites enabled path.
 6. That path gives what nginx renders. Default is symlink See the server block in `/etc/nginx/sites-available/default` - this file would have listen ports, root, index etc.
@@ -93,13 +145,13 @@ In general we are going to see where nginx serves the files from and how. We ins
    - Now the website should not load as we dont have `index.html` in path specified by root i.e. `/var/www/html`
 9. Edit `/var/www/html`, rename `index.nginx-debian.html` to `index.html`.
 
-#### Breaking the symbolic-link.
+### Breaking the symbolic-link.
 
 10. Remove soft link in `sites-enabled` : `rm /etc/nginx/sites-enabled/default`
 11. Check nginx config `sudo nginx -t`& reload the config `sudo systemctl reload nginx.service`.
 12. Now Nginx doesnt know responce for requests it receives.
 
-#### creating a new symbolic-link
+### creating a new symbolic-link
 
 13. In `sites-available` folder copy the default profile and call it bharathreddy.net
 14. In this new profile, change root location to `/var/wwww/bharathreddy.net` and server_name to `bharathreddy.net`
@@ -152,9 +204,14 @@ In general we are going to see where nginx serves the files from and how. We ins
 - add a permanent redirection `301` to point to our website.
 - now any hit to server which is not our website will get redirected to our website. Try it on browser with direct ip address - this now will get redirected to our website.
 
-# HTTPS
+</details>
 
-### installing _[Certbot](https://certbot.eff.org/instructions?ws=nginx&os=snap&tab=standard)_
+<!-- ## HTTPS -->
+
+<details>
+  <summary>Enabling HTTP routing to HTTPS</summary>
+
+### Installing [Certbot](https://certbot.eff.org/instructions?ws=nginx&os=snap&tab=standard)
 
 - `sudo snap install --classic certbot` : install
 - `sudo ln -s /snap/bin/certbot /usr/bin/certbot` : to ensure certbot command runs
@@ -163,4 +220,17 @@ In general we are going to see where nginx serves the files from and how. We ins
 
 ### Understanding changes made by certbot on our server
 
-- sudo systemctl list-timers
+- certbot runs chron jobs twice a day to check if a cert is up for renewal and renews it. Manual renewal is done via `sudo certbot renew`
+- `sudo systemctl list-timers` will show all system-md timers. you can see `snap.certbot.renew.timer` running every 12 hours.
+- Enable http2 on our configs by ading http2 on `/etc/nginx/sites-available/bharathreddy.net` and other subdomain configs as well.
+- test and reload the config. `sudo nginx -t && sudo systemctl reload nginx.service`
+- check on browser the protocol used for the site or google check http2.
+
+### CLOUDFLARE
+
+- It looks like the problem is Certbot does not follow the redirection required by Cloudflare from HTTP to HTTPS, resulting in a failure to validate the website and obtain the certificates.
+- So, as our websites are anyway redirecting to HTTPS on any requests (thanks to the Certbot configuration), we can disable that configuration in Cloudflare and resolve the problem. Turn off allways use HTTPS on cloudflare.
+
+</details>
+
+---
