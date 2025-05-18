@@ -10,7 +10,7 @@
 
 </div>
 
-- Product Marketing site (www.insightaiq.com) stays on a managed domain hosting provider.f
+- Product Marketing site (www.insightaiq.com) stays on a managed domain hosting provider.
 - Login & App live under a new sub-domain (e.g. login.insightaiq.com) that points to a self managed VPS.
 - Nginx terminates TLS and reverse-proxies to Node/Express.
 - Authentication is fully self-managed: passwords & refresh tokens in MongoDB Atlas; access tokens are JWTs minted by the Node app.
@@ -18,27 +18,56 @@
 </details>
 
 <details>
-  <summary>DNS setup</summary>
+  <summary>Setup</summary>
 
-</details>
+### DNS Setup
 
-<details>
-  <summary>Nginx vhost setup</summary>
+1. Add an A record with name `login` pointing to ipv4 addr of vps.
+2. Add an AAAA record with name `login` pointing to ipv6 addr of vps.
+3. Check dns propagation
 
-</details>
+```shell
+dig +short www.insightaiq.com # should return hosted service ip
+dig +short login.insightaiq.com # should return vps ip
+dig +short @1.1.1.1 login.insightaiq.com # query cloudflare resolved and should return vps ip.
+```
 
-<details>
-  <summary>TLS</summary>
+4. Test from browser login.insightaiq.com - Nginx should reply. Doesnt matter what the responce is but check DNS on dev tools.
 
-</details>
+Once DNS shows right IP, the VPS is officially the origin for login.insightaiq.com
 
-<details>
-  <summary>Node runtime</summary>
+### Nginx vhost setup
 
-</details>
+1. Create a site for login.insightaiq, i am lazy so i have copied nginx default profile in /etc/nginx/sites-available `sudo cp default login.insightaiq.com`. Edits made
+   - remove default server from server block (currently the nginx server serves another website from default server.)
+   - Change root to pickup the right website page
+   - Change server_name
+   - Create symbolic-link `sudo ln -s /etc/nginx/sites-available/login.insightaiq.com /etc/nginx/sites-enabled/`
+2. Create a certificate `sudo certbot --nginx --hsts -d login.insightaiq.com`
+3. Now that certbot would have edited the profile again edit it to add http2 protocol on both ipv4 and ipv6
 
-<details>
-  <summary>Security Hygiene</summary>
+```
+listen 443 ssl http2; # managed by Certbot
+listen [::]:443 ssl http2; # managed by Certbot
+```
+
+4. create sitepage for login.insightaiq.com
+
+   - For now ive just copied a standard template on `/var/www/login.insightaiq.com`
+
+5. Edit the insightaiq/whitespots webpage to provide a link.
+
+DID NOT DO:
+
+1. Disable access to .htaccess and .git files as i already modified it on default profile before copying it for login.insightaiq.com
+2. add security-headers.conf sinippet to the profile as i had already modified it on default profile.
+3.
+
+### TLS
+
+### Node Runtime
+
+### Security Hygiene
 
 </details>
 
@@ -182,7 +211,7 @@ In general we are going to see where nginx serves the files from and how. We ins
 
 26. Create a Common config file and include this config to every sites and subsites config
     - create a file `/etc/nginx/snippets/security-headers.conf` and add header contents.
-    - add `include snippets/security-headers.conf;` in server block in each conf.\
+    - add `include snippets/security-headers.conf;` in server block in each conf.
     - test and reload nginx config.
     - check the website at `securityheaders.com` to see if these headers are in effect. Or check on google dev tools.
 
