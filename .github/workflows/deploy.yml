@@ -38,6 +38,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          passphrase: ${{ secrets.VPS_KEY_PASSPHRASE }}
           source: "release.tgz,deploy/nginx/login.insightaiq.com.conf"
           target: "/home/brk/apps/insightaiq/deploy_tmp"
           overwrite: true # ensures old files are replaced
