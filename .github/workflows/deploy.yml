@@ -60,7 +60,7 @@ jobs:
             cd /home/brk/apps/insightaiq
 
             # ----------- Nginx config -----------
-            sudo mv deploy_tmp/login.insightaiq.com.conf /etc/nginx/sites-available/login.insightaiq.com
+            sudo mv deploy_tmp/deploy/nginx/login.insightaiq.com.conf /etc/nginx/sites-available/login.insightaiq.com
             sudo ln -sfn /etc/nginx/sites-available/login.insightaiq.com /etc/nginx/sites-enabled/login.insightaiq.com
             sudo nginx -t && echo "Nginx config OK"
 
