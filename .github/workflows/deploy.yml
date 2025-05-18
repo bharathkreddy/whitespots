@@ -18,9 +18,17 @@ jobs:
       - run: npm ci
       #- run: npm run build         # keep if needed
       - run: |
+          # ➊ use a fresh temporary file in /tmp
           tmpfile=$(mktemp -p /tmp release.XXXXXX.tgz)
+
+          # ➋ create the archive from the repo root, WRITE to tmpfile
           tar -C . -czf "$tmpfile" --exclude=node_modules --exclude=.git .
+
+          # ➌ move it back into the workspace so the scp step finds it
           mv "$tmpfile" release.tgz
+
+          # ➍ make it world-readable so the scp container can read it
+          chmod 644 release.tgz
 
       # 3️⃣  upload artefact + nginx conf
       - name: Upload release + nginx config
