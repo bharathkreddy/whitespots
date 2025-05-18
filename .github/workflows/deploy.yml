@@ -18,7 +18,7 @@ jobs:
 
       # 2️⃣  Build, test, and create a tarball
       - run: npm ci
-      - run: npm run build # keep or drop if you have no build step
+      # - run: npm run build # keep or drop if you have no build step
       - run: tar czf release.tgz --exclude=node_modules .
 
       # 3️⃣  Copy BOTH artefact and nginx file to the VPS
