@@ -15,10 +15,37 @@
 - Nginx terminates TLS and reverse-proxies to Node/Express.
 - Authentication is fully self-managed: passwords & refresh tokens in MongoDB Atlas; access tokens are JWTs minted by the Node app.
 
+Local Folder structure
+
+whitespots/ # Git repository root
+├─ src/
+│ └─ index.js # Express entry-point
+├─ .env.example # Placeholder, never commit real secrets
+├─ package.json
+├─ package-lock.json
+├─ ecosystem.config.js # PM2 process definition
+├─ .gitignore
+├─ deploy/
+│ └─ nginx/
+│ └─ login.insightaiq.com.conf # Virtual-host template which will get copied on deploy to /etc/nginx/available-sites/login.insightaiq.com
+└─ .github/
+└─ workflows/
+└─ deploy.yml # GitHub Actions CI/CD pipeline
+
+Server side folder structure
+
+/home/{user}/apps/whitespots/
+├─ releases/ # each deploy → timestamped sub-dir
+│ └─ 20250518T193500/ # latest release (current -> here)
+├─ shared/
+│ ├─ .env # production secrets (never in Git)
+│ └─ log/ # PM2 log symlink target (optional)
+└─ current -> releases/20250518T193500 # atomic symlink
+
 </details>
 
 <details>
-  <summary>Setup</summary>
+  <summary>Infra Setup</summary>
 
 ### DNS Setup
 
@@ -70,9 +97,73 @@ DID NOT DO:
    - `exec $SHELL` starts a new shell
    - `n -V` and then `node -v ` both should show version of n & node - i do this to check if noth are on PATH.
 2. Install [PM2](https://pm2.keymetrics.io/)
-   - test
+   - global isntall `npm install pm2@latest -g`, A Process Manager written in Node.js that keeps your Node (or any script) running forever, restarts it on crash, and gives you simple CLI monitoring. A plain node app.js & dies if the script throws, if the SSH session drops, or when the server reboots. PM2 solves all three and centralises log files.
+   - `pm2 startup`. Detects your init system (systemd on Ubuntu) and prints a sudo command that registers PM2 itself as a system service. Running that command creates `/etc/systemd/system/pm2-root.service` which:
+   - starts `pm2 resurrect` at boot
+   - ensures PM2 keeps supervising child apps even if no user logs in.
+   - `sudo env PATH=$PATH:/home/brk/n/bin /home/brk/n/lib/node_modules/pm2/bin/pm2 startup systemd -u brk --hp /home/brk` : now PM2 starts by itself when VPS reboots for whatever reason.
+   - `pm2 save` Writes the current process list to `~/.pm2/dump.pm2.` On reboot the `pm2-root.service` reads that file and respawns every saved app exactly as before (script path, args, env).
+   - `pm2 start index.js --name login --watch && pm2 save` : this is how we can run any js app now.
 
-### Security Hygiene
+</details>
+
+<details>
+  <summary>local development first time.</summary>
+
+1. Install libraries `npm i express helmet cors dotenv`
+2. Add `src/index.js`
+3. Add scripts to `package.json` (dev, start).
+4. Run locally: `npm run dev`, hit `localhost:3000/api/ping` and we should receive `pong` as responce.
+5. Create Nginx v-host template in deploy/nginx/.
+6. Commit code, .gitignore, .env.example; git push origin main.
+
+</details>
+
+<details>
+  <summary>CICD setup</summary>
+
+1. On VPS machine add a non root user `sudo visudo -f /etc/sudoers.d/{user}` and add below line `{user} ALL=(root) NOPASSWD:/usr/bin/pm2,/usr/bin/systemctl reload nginx`. This now allows `{user}` to tell PM2 to reload and ask systemd to reload Nginx—nothing else.
+
+2. setup folder structure for the app on vps
+
+   > sudo mkdir -p /home/{user}/apps/insightaiq/{releases,shared}
+   > sudo chown -R {user}:{user} /home/brk/apps/insightaiq
+
+3. Add below `git secrets`(not vps).
+
+   - VPS_HOST
+   - VPS_PORT
+   - VPS_USER
+   - VPS_SSH_KEY (privake part of key, public part added to authorised users on vps)
+
+4. I don’t want .env in Git; it holds my MongoDB password, JWT signing key, neo4j keys, and openAI keys. Instead i will store a single canonical copy on the VPS and let each deployed release symlink to it.
+
+   - `/home/{user}/apps/insightaiq/shared/.env`
+   - `chmod 600 /home/{user}/apps/insightaiq/shared/.env` and then `chown {user}:{user} /home/{user}/apps/insightaiq/shared/.env`, these steps lock down the file for any other user.
+
+5. Add github actions file. This file bundles the npm code into a tar ball and scp and extracts this tar into a timestamped folder. This is typical capistrano style deployment. Git actions deploys code under versioned directories and then symlinks the latest one as the current release. Ex below.
+
+```
+  login.insightaiq.com
+  |
+  | - releases
+    | - 1366924759
+    | - 1366927898
+    | - 1367155641
+  | - shared
+  | - current
+```
+
+hot-reload—no manual SSH edits required
+
+# first manual run (on the VPS, as brk)
+
+pm2 start /home/brk/apps/insightaiq/current/index.js --name insightaiq --env production
+pm2 save
+
+# if you haven't yet:
+
+sudo env PATH=$PATH node $(command -v pm2) startup systemd -u brk --hp /home/brk
 
 </details>
 

@@ -4,7 +4,9 @@
   "description": "backend for whitespots",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/bharathkreddy/whitespots/issues"
   },
-  "homepage": "https://github.com/bharathkreddy/whitespots#readme"
+  "homepage": "https://github.com/bharathkreddy/whitespots#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0"
+  }
 }

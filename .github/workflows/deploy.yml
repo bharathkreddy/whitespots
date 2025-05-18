@@ -1,0 +1,68 @@
+name: CI + CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣  Get source, set up Node
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 2️⃣  Build, test, and create a tarball
+      - run: npm ci
+      - run: npm run build # keep or drop if you have no build step
+      - run: tar czf release.tgz --exclude=node_modules .
+
+      # 3️⃣  Copy BOTH artefact and nginx file to the VPS
+      - name: Upload release + nginx config
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          # ⤵︎ comma-separated list of paths in your repo
+          source: "release.tgz,deploy/nginx/login.insightaiq.com.conf"
+          target: "/home/brk/apps/insightaiq/deploy_tmp"
+
+      # 4️⃣  SSH: move nginx file, unpack release, restart PM2 & reload Nginx
+      - name: Remote deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+            cd /home/brk/apps/insightaiq
+
+            # ---------- Nginx config ----------
+            sudo mv deploy_tmp/login.insightaiq.com.conf /etc/nginx/sites-available/login.insightaiq.com
+            sudo ln -sfn /etc/nginx/sites-available/login.insightaiq.com /etc/nginx/sites-enabled/login.insightaiq.com
+            sudo nginx -t    # abort if syntax error
+
+            # ---------- Application release ----------
+            cd releases
+            ts=$(date +%Y%m%d%H%M%S)
+            mkdir $ts
+            tar xzf ../deploy_tmp/release.tgz -C $ts
+            cd $ts
+            npm ci --omit=dev
+            ln -sfn /home/brk/apps/insightaiq/shared/.env .env
+            ln -sfn $PWD /home/brk/apps/insightaiq/current
+
+            # ---------- Service reloads ----------
+            sudo pm2 startOrReload /home/brk/apps/insightaiq/current/ecosystem.config.js --update-env
+            sudo systemctl reload nginx
+
+            # ---------- Cleanup ----------
+            rm -rf /home/brk/apps/insightaiq/deploy_tmp
