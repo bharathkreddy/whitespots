@@ -54,6 +54,7 @@ jobs:
           passphrase: ${{ secrets.VPS_KEY_PASSPHRASE }}
           script: |
             set -e
+            export PATH=$PATH:/home/brk/n/bin:/usr/local/bin  # for node's bin to be on path
             # make sure deploy_tmp exists (idempotent)
             mkdir -p /home/brk/apps/insightaiq/deploy_tmp
 
