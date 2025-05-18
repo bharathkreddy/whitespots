@@ -76,7 +76,7 @@ jobs:
             ln -sfn "$PWD" /home/brk/apps/insightaiq/current
 
             # ----------- Service reloads -----------
-            sudo pm2 startOrReload /home/brk/apps/insightaiq/current/ecosystem.config.js --update-env
+            pm2 startOrReload /home/brk/apps/insightaiq/current/ecosystem.config.js --update-env
             sudo nginx -t && sudo systemctl reload nginx
 
             # ----------- cleanup -----------
