@@ -60,12 +60,17 @@ listen [::]:443 ssl http2; # managed by Certbot
 DID NOT DO:
 
 1. Disable access to .htaccess and .git files as i already modified it on default profile before copying it for login.insightaiq.com
-2. add security-headers.conf sinippet to the profile as i had already modified it on default profile.
-3.
-
-### TLS
+2. Add security-headers.conf sinippet to the profile as i had already modified it on default profile.
 
 ### Node Runtime
+
+1. Install Node LTS(22). Below list of issus and how these were fixed. `sudo curl -fsSL https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s 22`
+   - Ubuntu on VPS is a lightweight one, to compile node from source this os lacks C tool chain that lives in GNU `make` toolset.
+   - Since this is also required by any npm install , i decided to `sudo apt install -y build-essential curl`, install `build-essentials` a broader library that brings make, gcc, g++, libc headers - all of which i would need.
+   - `exec $SHELL` starts a new shell
+   - `n -V` and then `node -v ` both should show version of n & node - i do this to check if noth are on PATH.
+2. Install [PM2](https://pm2.keymetrics.io/)
+   - test
 
 ### Security Hygiene
 
