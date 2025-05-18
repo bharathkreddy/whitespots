@@ -156,6 +156,15 @@ DID NOT DO:
 
 hot-reload—no manual SSH edits required
 
+6. `sudo visudo -f /etc/sudoers.d/{user}` and add below to this file, we are granting some file access to the user as its required in copying the files in github actions.
+   ```
+   {user} ALL=(root) NOPASSWD: /usr/bin/pm2, \
+       /usr/bin/systemctl reload nginx, \
+       /usr/sbin/nginx, \
+       /bin/mv, \
+       /bin/ln
+   ```
+
 # first manual run (on the VPS, as brk)
 
 pm2 start /home/brk/apps/insightaiq/current/index.js --name insightaiq --env production
